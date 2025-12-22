@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useState } from 'react';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
-import Enrolled from './pages/Enrolled'; // Make sure this is imported
+import Enrolled from './pages/Enrolled';
+import Teaching from './pages/Teaching';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,6 +24,11 @@ function App() {
         <Route path="/enrolled" element={
           isAuthenticated ? 
           <Enrolled setIsAuthenticated={setIsAuthenticated} /> : 
+          <Navigate to="/" />
+        } />
+        <Route path="/teaching" element={
+          isAuthenticated ? 
+          <Teaching setIsAuthenticated={setIsAuthenticated} /> :
           <Navigate to="/" />
         } />
       </Routes>

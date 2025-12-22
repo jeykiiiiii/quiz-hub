@@ -94,52 +94,55 @@ function Enrolled({ setIsAuthenticated }) {
         onJoinClassClick={() => setShowJoinModal(true)}
       />
       
-      <div className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8" role="main">
         {/* Top Section - Quizzes taking full width */}
         <div className="mb-8">
-          <div className="bg-gray-900 rounded-xl p-6">
+          <section className="bg-gray-900 rounded-xl p-6" aria-labelledby="quizzes-heading">
             <div className="mb-8">
-              <div className="flex space-x-4 mb-3">
-                <button className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition">
+              <div className="flex space-x-4 mb-3" role="tablist" aria-label="Quiz status filter">
+                <button className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-500" role="tab" aria-selected="true">
                   <span className="font-medium">Assigned</span>
                 </button>
-                <button className="px-6 py-3 bg-red-900 hover:bg-red-800 rounded-lg transition">
+                <button className="px-6 py-3 bg-red-900 hover:bg-red-800 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-500" role="tab" aria-selected="false">
                   <span className="font-medium text-red-300">Missing</span>
                 </button>
-                <button className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition">
+                <button className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-500" role="tab" aria-selected="false">
                   <span className="font-medium">Done</span>
                 </button>
               </div>
             </div>
             
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
               {/* All Classes Dropdown - Only shows enrolled classes */}
               <div className="relative">
                 <button
                   onClick={() => setShowClassDropdown(!showClassDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
+                  aria-haspopup="listbox"
+                  aria-expanded={showClassDropdown}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <span className="font-medium">{selectedClass}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 
                 {showClassDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10 min-w-[200px]">
+                  <ul className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10 min-w-[200px]" role="listbox">
                     {enrolledClassNames.map((className, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setSelectedClass(className);
-                          setShowClassDropdown(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 hover:bg-gray-700 ${index === 0 ? 'rounded-t-lg' : ''} ${index === enrolledClassNames.length - 1 ? 'rounded-b-lg' : ''} ${selectedClass === className ? 'bg-gray-700' : ''}`}
-                      >
-                        {className}
-                      </button>
+                      <li key={index} role="option" aria-selected={selectedClass === className}>
+                        <button
+                          onClick={() => {
+                            setSelectedClass(className);
+                            setShowClassDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 ${index === 0 ? 'rounded-t-lg' : ''} ${index === enrolledClassNames.length - 1 ? 'rounded-b-lg' : ''} ${selectedClass === className ? 'bg-gray-700' : ''}`}
+                        >
+                          {className}
+                        </button>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
               </div>
 
@@ -147,35 +150,39 @@ function Enrolled({ setIsAuthenticated }) {
               <div className="relative">
                 <button
                   onClick={() => setShowTimelineDropdown(!showTimelineDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
+                  aria-haspopup="listbox"
+                  aria-expanded={showTimelineDropdown}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <span className="font-medium">{selectedTimeline}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 
                 {showTimelineDropdown && (
-                  <div className="absolute top-full right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10 min-w-[180px]">
+                  <ul className="absolute top-full right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10 min-w-[180px]" role="listbox">
                     {timelineOptions.map((timeline, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setSelectedTimeline(timeline);
-                          setShowTimelineDropdown(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 hover:bg-gray-700 ${index === 0 ? 'rounded-t-lg' : ''} ${index === timelineOptions.length - 1 ? 'rounded-b-lg' : ''} ${selectedTimeline === timeline ? 'bg-gray-700' : ''}`}
-                      >
-                        {timeline}
-                      </button>
+                      <li key={index} role="option" aria-selected={selectedTimeline === timeline}>
+                        <button
+                          onClick={() => {
+                            setSelectedTimeline(timeline);
+                            setShowTimelineDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 ${index === 0 ? 'rounded-t-lg' : ''} ${index === timelineOptions.length - 1 ? 'rounded-b-lg' : ''} ${selectedTimeline === timeline ? 'bg-gray-700' : ''}`}
+                        >
+                          {timeline}
+                        </button>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
               </div>
             </div>
 
             {/* Quizzes List - Only shows quizzes for enrolled classes */}
-            <div className="space-y-6">
+            <h2 id="quizzes-heading" className="sr-only">Your Quizzes</h2>
+            <div className="space-y-6" role="list">
               {finalQuizzes.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-400">
@@ -186,11 +193,11 @@ function Enrolled({ setIsAuthenticated }) {
                 </div>
               ) : (
                 finalQuizzes.map((quiz) => (
-                  <div key={quiz.id} className="bg-gray-800 rounded-xl p-6">
+                  <article key={quiz.id} className="bg-gray-800 rounded-xl p-6" role="listitem">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-2xl font-bold mb-3">{quiz.name}</h3>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 flex-wrap">
                           <span className="text-gray-400 text-lg">{quiz.class}</span>
                           {quiz.status === "missing" && (
                             <span className="px-4 py-1 bg-red-900 text-red-300 text-sm font-medium rounded-full">
@@ -209,64 +216,73 @@ function Enrolled({ setIsAuthenticated }) {
                         <p className="font-semibold text-lg">{quiz.due}</p>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 ))
               )}
             </div>
-          </div>
+          </section>
         </div>
 
         {/* Bottom Section - Your Classes (full width) */}
-        <div>
+        <section aria-labelledby="classes-heading">
           <div className="bg-gray-900 rounded-xl p-6">
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Your Classes</h2>
+              <h2 id="classes-heading" className="text-2xl font-bold">Your Classes</h2>
               <button
                 onClick={() => setShowJoinModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg font-medium transition"
+                aria-label="Join a new class"
+                className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-black"
               >
-                <span className="text-xl">+</span>
+                <span className="text-xl" aria-hidden="true">+</span>
                 <span>Join Class</span>
               </button>
             </div>
             
             {/* Classes Grid - 3 columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
               {classes.length === 0 ? (
                 <div className="col-span-full text-center py-8">
                   <p className="text-gray-400 mb-4">You haven't joined any classes yet.</p>
                   <button
                     onClick={() => setShowJoinModal(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 rounded-xl font-semibold transition"
+                    aria-label="Join your first class"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 rounded-xl font-semibold transition focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-black"
                   >
-                    <span className="text-2xl">+</span>
+                    <span className="text-2xl" aria-hidden="true">+</span>
                     <span>Join Your First Class</span>
                   </button>
                 </div>
               ) : (
                 classes.map((classItem) => (
-                  <div key={classItem.code} className="bg-gray-800 rounded-xl p-6">
+                  <article key={classItem.code} className="bg-gray-800 rounded-xl p-6 focus-within:ring-2 focus-within:ring-orange-500" role="listitem">
                     <h3 className="text-2xl font-bold mb-3">{classItem.name}</h3>
                     <p className="text-gray-400 text-lg mb-2">{classItem.schedule}</p>
-                    <p className="text-gray-400 text-lg mb-6">{classItem.instructor}</p>
-                    <div className="flex justify-between items-center">
+                    <p className="text-gray-400 text-lg mb-6">
+                      <span className="sr-only">Instructor: </span>
+                      {classItem.instructor}
+                    </p>
+                    <div className="flex justify-between items-center gap-2">
                       <button 
                         onClick={() => handleRemoveClass(classItem.code)}
-                        className="text-red-400 hover:text-red-300 text-sm"
+                        aria-label={`Leave ${classItem.name} class`}
+                        className="text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-red-400 transition"
                       >
                         Leave Class
                       </button>
-                      <button className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+                      <button 
+                        aria-label={`View ${classItem.name} class details`}
+                        className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      >
                         <span className="font-medium">View Class</span>
                       </button>
                     </div>
-                  </div>
+                  </article>
                 ))
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
 
       {/* Use the shared JoinClassModal */}
       <JoinClassModal 
