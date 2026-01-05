@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import QuizHeader from '../components/QuizHeader';
-import QuizBody from '../components/QuizBody';
-import Menu from '../components/Menu';
+import QuizHeader from '../components/instructor/QuizHeader';
+import QuizBody from '../components/instructor/QuizBody';
+import Menu from '../components/instructor/Menu';
 
 export default function Teaching({ setIsAuthenticated }) {
   // Quiz state

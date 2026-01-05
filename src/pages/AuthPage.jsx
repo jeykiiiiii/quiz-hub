@@ -52,47 +52,47 @@ function AuthPage({ setIsAuthenticated }) {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formErrors = validateForm();
-    
-    if (Object.keys(formErrors).length === 0) {
-      // Simulate authentication
-      console.log(isLogin ? 'Logging in with:' : 'Registering with:', formData);
-      setIsAuthenticated(true);
-      navigate('/dashboard');
-    } else {
-      setErrors(formErrors);
+  // Update the handleSubmit function in AuthPage.jsx
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const formErrors = validateForm();
+  
+  if (Object.keys(formErrors).length === 0) {
+    try {
+      if (isLogin) {
+        // Login with Supabase
+        const { data, error } = await authAPI.signIn(formData.email, formData.password);
+        
+        if (error) throw error;
+        
+        setIsAuthenticated(true);
+        navigate('/dashboard');
+      } else {
+        // Register with Supabase
+        const userData = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: 'student' // or 'teacher' based on your logic
+        };
+        
+        const { data, error } = await authAPI.signUp(
+          formData.email, 
+          formData.password, 
+          userData
+        );
+        
+        if (error) throw error;
+        
+        setIsAuthenticated(true);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      alert(error.message);
     }
-  };
-
-  const handleSocialLogin = (provider) => {
-    console.log(`Logging in with ${provider}`);
-    setIsAuthenticated(true);
-    navigate('/dashboard');
-  };
-
-  const switchToSignUp = (e) => {
-    e?.preventDefault(); // Prevent default if event exists
-    setIsLogin(false);
-    setErrors({});
-    setFormData(prev => ({
-      ...prev,
-      confirmPassword: ''
-    }));
-  };
-
-  const switchToLogin = (e) => {
-    e?.preventDefault(); // Prevent default if event exists
-    setIsLogin(true);
-    setErrors({});
-    setFormData(prev => ({
-      ...prev,
-      firstName: '',
-      lastName: '',
-      confirmPassword: ''
-    }));
-  };
+  } else {
+    setErrors(formErrors);
+  }
+};
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">

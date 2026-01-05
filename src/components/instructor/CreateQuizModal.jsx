@@ -1,6 +1,6 @@
 // components/CreateQuizModal.js
 import React, { useState } from 'react';
-import { availableClasses } from '../data/classes';
+import { availableClasses } from '../../data/classes';
 
 function CreateQuizModal({ show, onClose, onJoin }) {
   const [classCode, setClassCode] = useState('');

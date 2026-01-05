@@ -4,7 +4,7 @@ import { Menu } from "@headlessui/react";
 import { useState } from "react";
 import ScheduleModal from "./ScheduleModal";
 
-import defaultMenuLinks from "../data/menuLinks";
+import defaultMenuLinks from "../../data/menuLinks";
 
 export default function QuizHeader({ menuLinks = defaultMenuLinks, onSelect = () => {}, assignEnabled = false, onAssign = () => {} }) {
   const [scheduleOpen, setScheduleOpen] = useState(false);
