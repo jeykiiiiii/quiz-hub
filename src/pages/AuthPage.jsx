@@ -12,7 +12,43 @@ function AuthPage({ setIsAuthenticated }) {
     rememberMe: false
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Add these missing functions
+  const switchToSignUp = () => {
+    setIsLogin(false);
+    setErrors({});
+    setFormData(prev => ({
+      ...prev,
+      confirmPassword: ''
+    }));
+  };
+
+  const switchToLogin = () => {
+    setIsLogin(true);
+    setErrors({});
+    setFormData(prev => ({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      rememberMe: false
+    }));
+  };
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      // You need to implement or import your authAPI
+      const { error } = await authAPI.signInWithProvider(provider.toLowerCase());
+      if (error) throw error;
+      setIsAuthenticated(true);
+      navigate('/dashboard');
+    } catch (error) {
+      alert(`Error with ${provider} login: ${error.message}`);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -32,7 +68,9 @@ function AuthPage({ setIsAuthenticated }) {
     if (!isLogin) {
       if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
       if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-      if (formData.password !== formData.confirmPassword) {
+      if (!formData.confirmPassword.trim()) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
     }
@@ -52,47 +90,63 @@ function AuthPage({ setIsAuthenticated }) {
     return newErrors;
   };
 
-  // Update the handleSubmit function in AuthPage.jsx
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const formErrors = validateForm();
-  
-  if (Object.keys(formErrors).length === 0) {
-    try {
-      if (isLogin) {
-        // Login with Supabase
-        const { data, error } = await authAPI.signIn(formData.email, formData.password);
-        
-        if (error) throw error;
-        
-        setIsAuthenticated(true);
-        navigate('/dashboard');
-      } else {
-        // Register with Supabase
-        const userData = {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: 'student' // or 'teacher' based on your logic
-        };
-        
-        const { data, error } = await authAPI.signUp(
-          formData.email, 
-          formData.password, 
-          userData
-        );
-        
-        if (error) throw error;
-        
-        setIsAuthenticated(true);
-        navigate('/dashboard');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formErrors = validateForm();
+    
+    if (Object.keys(formErrors).length === 0) {
+      setIsLoading(true);
+      try {
+        // Note: You need to import authAPI from your Supabase setup
+        if (isLogin) {
+          // Login
+          const { data, error } = await authAPI.signIn(formData.email, formData.password);
+          
+          if (error) throw error;
+          
+          setIsAuthenticated(true);
+          navigate('/dashboard');
+        } else {
+          // Register
+          const userData = {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            role: 'student'
+          };
+          
+          const { data, error } = await authAPI.signUp(
+            formData.email, 
+            formData.password, 
+            userData
+          );
+          
+          if (error) throw error;
+          
+          setIsAuthenticated(true);
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        // Better error handling
+        if (error.message.includes('Invalid login credentials')) {
+          setErrors(prev => ({
+            ...prev,
+            password: 'Invalid email or password'
+          }));
+        } else if (error.message.includes('User already registered')) {
+          setErrors(prev => ({
+            ...prev,
+            email: 'Email already registered'
+          }));
+        } else {
+          alert(error.message);
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      alert(error.message);
+    } else {
+      setErrors(formErrors);
     }
-  } else {
-    setErrors(formErrors);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
@@ -227,9 +281,10 @@ const handleSubmit = async (e) => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded transition"
+              disabled={isLoading}
+              className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isLogin ? 'Login' : 'Sign Up'}
+              {isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
             </button>
           </form>
 
@@ -282,7 +337,7 @@ const handleSubmit = async (e) => {
             <p className="text-gray-400">
               {isLogin ? "No account? " : "Already have an account? "}
               <button
-                type="button"  // Added type="button" to prevent form submission
+                type="button"
                 onClick={isLogin ? switchToSignUp : switchToLogin}
                 className="ml-2 text-blue-400 font-semibold hover:text-blue-300"
               >
