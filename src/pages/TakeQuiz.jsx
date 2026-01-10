@@ -606,28 +606,7 @@ function TakeQuiz({ setIsAuthenticated }) {
               Start Quiz
             </button>
             
-            {/* Test button for tab switch detection */}
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => {
-                  console.log('Testing tab switch detection...');
-                  setTabSwitchCount(prev => {
-                    const newCount = prev + 1;
-                    console.log(`Tab switch count: ${newCount}/3`);
-                    if (newCount >= 3) {
-                      alert('Test: 3 switches reached! In real quiz, this would auto-submit.');
-                    } else {
-                      setShowWarning(true);
-                      setTimeout(() => setShowWarning(false), 2000);
-                    }
-                    return newCount;
-                  });
-                }}
-                className="text-sm text-gray-400 hover:text-white"
-              >
-                Test Tab Switch Detection
-              </button>
-            </div>
+            
           </div>
         </div>
       </div>
