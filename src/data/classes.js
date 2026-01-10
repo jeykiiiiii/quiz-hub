@@ -1,60 +1,101 @@
-export const availableClasses = {
-  "ABCDE": { 
-    name: "Subject A", 
-    schedule: "Mon-Wed 10-11", 
-    instructor: "Prof. Smith"
-  },
-  "ABCDEFG": { 
-    name: "Subject B", 
-    schedule: "Tue-Thu 2-3", 
-    instructor: "Prof. Johnson"
-  },
-  "MATH101": { 
-    name: "Subject C", 
-    schedule: "MWF 9-10", 
-    instructor: "Dr. Lee"
-  },
-  "SCI202": { 
-    name: "Subject D", 
-    schedule: "TTH 1-2", 
-    instructor: "Dr. Garcia"
-  },
+// data/classes.js
+import { getClassByCode } from '../utils/sharedClasses'; // ✅ Fixed import
+
+// This function returns available classes from localStorage
+export const getAvailableClasses = () => {
+  const savedClasses = JSON.parse(localStorage.getItem('allClasses') || '[]');
+  const classObj = {};
   
-  "COSC101": { 
-    name: "COSC - 101", 
-    schedule: "3 - 2", 
-    instructor: "Ruffino Dela Cruz"
-  },
-  "DCIT26": { 
-    name: "DCIT - 26", 
-    schedule: "3 - 2", 
-    instructor: "Edan Belgica"
-  },
-  "COSC75": { 
-    name: "COSC - 75", 
-    schedule: "3 - 2", 
-    instructor: "Joshua Salceda"
-  }
+  savedClasses.forEach(cls => {
+    classObj[cls.code] = {
+      name: cls.name,
+      schedule: cls.schedule || 'To be announced',
+      instructor: cls.instructor || 'Instructor',
+      description: cls.description || ''
+    };
+  });
+  
+  return classObj;
 };
 
-export const classQuizzes = {
-  "COSC101": [
-    { id: 2, name: "Quiz 2", class: "COSC 101", due: "Tomorrow, 11:59 PM", status: "upcoming" }
-  ],
-  "DCIT26": [
-    { id: 1, name: "Quiz 1", class: "DCIT 26", due: "Today, 11:59 PM", status: "missing" }
-  ],
-  "COSC75": [
-    { id: 3, name: "Quiz 3", class: "COSC 75", due: "Thursday, Jan 15, 2026, 11:59 PM", status: "upcoming" }
-  ]
-};
-
-export const getQuizzesForClasses = (classCodes) => {
-  let quizzes = [];
-  classCodes.forEach(code => {
-    if (classQuizzes[code]) {
-      quizzes = [...quizzes, ...classQuizzes[code]];
+// This function returns quizzes for specific classes
+export const getClassQuizzes = () => {
+  const quizzes = JSON.parse(localStorage.getItem('teacherQuizzes') || '[]');
+  const quizObj = {};
+  
+  // Group quizzes by class
+  quizzes.forEach(quiz => {
+    if (quiz.status === 'assigned') {
+      const classCode = getClassCodeByName(quiz.class);
+      if (classCode) {
+        if (!quizObj[classCode]) {
+          quizObj[classCode] = [];
+        }
+        
+        // Calculate due status
+        let status = 'upcoming';
+        let dueText = 'No due date';
+        
+        if (quiz.scheduleDate) {
+          const dueDate = new Date(quiz.scheduleDate);
+          const today = new Date();
+          const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays < 0) {
+            status = 'missing';
+            dueText = 'Overdue';
+          } else if (diffDays === 0) {
+            dueText = 'Today';
+          } else if (diffDays === 1) {
+            dueText = 'Tomorrow';
+          } else if (diffDays <= 7) {
+            dueText = `In ${diffDays} days`;
+          } else {
+            dueText = dueDate.toLocaleDateString();
+          }
+        }
+        
+        quizObj[classCode].push({
+          id: quiz.id,
+          name: quiz.title,
+          class: quiz.class,
+          due: dueText,
+          status: status,
+          points: quiz.points,
+          instructions: quiz.instructions,
+          timer: quiz.timerMinutes,
+          topic: quiz.topic
+        });
+      }
     }
   });
+  
+  return quizObj;
+};
+
+// Helper function to get class code from class name
+const getClassCodeByName = (className) => {
+  const classes = JSON.parse(localStorage.getItem('allClasses') || '[]');
+  const foundClass = classes.find(cls => cls.name === className);
+  return foundClass ? foundClass.code : null;
+};
+
+// Get quizzes for specific class codes
+export const getQuizzesForClasses = (classCodes) => {
+  const allQuizzes = getClassQuizzes();
+  let quizzes = [];
+  
+  classCodes.forEach(code => {
+    if (allQuizzes[code]) {
+      quizzes = [...quizzes, ...allQuizzes[code]];
+    }
+  });
+  
   return quizzes;
 };
+
+// Export availableClasses for backward compatibility
+export const availableClasses = getAvailableClasses();
+
+// Export classQuizzes for backward compatibility  
+export const classQuizzes = getClassQuizzes();

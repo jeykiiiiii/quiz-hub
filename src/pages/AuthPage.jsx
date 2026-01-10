@@ -15,7 +15,6 @@ function AuthPage({ setIsAuthenticated }) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Add these missing functions
   const switchToSignUp = () => {
     setIsLogin(false);
     setErrors({});
@@ -38,11 +37,15 @@ function AuthPage({ setIsAuthenticated }) {
     }));
   };
 
+  // Mock social login function for localStorage
   const handleSocialLogin = async (provider) => {
     try {
-      // You need to implement or import your authAPI
-      const { error } = await authAPI.signInWithProvider(provider.toLowerCase());
-      if (error) throw error;
+      alert(`${provider} login would be implemented with OAuth in a real app`);
+      // For demo purposes, we'll simulate a successful login
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', 'demo@example.com');
+      localStorage.setItem('userRole', 'student');
+      
       setIsAuthenticated(true);
       navigate('/dashboard');
     } catch (error) {
@@ -90,59 +93,107 @@ function AuthPage({ setIsAuthenticated }) {
     return newErrors;
   };
 
+  // Mock user database in localStorage
+  const getUsersFromStorage = () => {
+    const users = localStorage.getItem('quizHubUsers');
+    return users ? JSON.parse(users) : [];
+  };
+
+  const saveUserToStorage = (userData) => {
+    const users = getUsersFromStorage();
+    users.push(userData);
+    localStorage.setItem('quizHubUsers', JSON.stringify(users));
+  };
+
+  const findUserByEmail = (email) => {
+    const users = getUsersFromStorage();
+    return users.find(user => user.email === email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateForm();
     
     if (Object.keys(formErrors).length === 0) {
       setIsLoading(true);
-      try {
-        // Note: You need to import authAPI from your Supabase setup
-        if (isLogin) {
-          // Login
-          const { data, error } = await authAPI.signIn(formData.email, formData.password);
-          
-          if (error) throw error;
-          
-          setIsAuthenticated(true);
-          navigate('/dashboard');
-        } else {
-          // Register
-          const userData = {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            role: 'student'
-          };
-          
-          const { data, error } = await authAPI.signUp(
-            formData.email, 
-            formData.password, 
-            userData
-          );
-          
-          if (error) throw error;
-          
-          setIsAuthenticated(true);
-          navigate('/dashboard');
+      
+      // Simulate API call delay
+      setTimeout(() => {
+        try {
+          if (isLogin) {
+            // Login logic
+            const user = findUserByEmail(formData.email);
+            
+            if (!user) {
+              setErrors(prev => ({
+                ...prev,
+                email: 'User not found. Please sign up first.'
+              }));
+              setIsLoading(false);
+              return;
+            }
+            
+            if (user.password !== formData.password) {
+              setErrors(prev => ({
+                ...prev,
+                password: 'Invalid password'
+              }));
+              setIsLoading(false);
+              return;
+            }
+            
+            // Successful login
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('userEmail', user.email);
+            localStorage.setItem('userFirstName', user.firstName);
+            localStorage.setItem('userLastName', user.lastName);
+            localStorage.setItem('userRole', user.role);
+            
+            setIsAuthenticated(true);
+            navigate('/dashboard');
+            
+          } else {
+            // Register logic
+            const existingUser = findUserByEmail(formData.email);
+            
+            if (existingUser) {
+              setErrors(prev => ({
+                ...prev,
+                email: 'Email already registered'
+              }));
+              setIsLoading(false);
+              return;
+            }
+            
+            // Create new user
+            const newUser = {
+              id: Date.now().toString(),
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              password: formData.password, // In real app, hash this!
+              role: 'student',
+              createdAt: new Date().toISOString()
+            };
+            
+            saveUserToStorage(newUser);
+            
+            // Auto-login after registration
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('userEmail', newUser.email);
+            localStorage.setItem('userFirstName', newUser.firstName);
+            localStorage.setItem('userLastName', newUser.lastName);
+            localStorage.setItem('userRole', newUser.role);
+            
+            setIsAuthenticated(true);
+            navigate('/dashboard');
+          }
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        // Better error handling
-        if (error.message.includes('Invalid login credentials')) {
-          setErrors(prev => ({
-            ...prev,
-            password: 'Invalid email or password'
-          }));
-        } else if (error.message.includes('User already registered')) {
-          setErrors(prev => ({
-            ...prev,
-            email: 'Email already registered'
-          }));
-        } else {
-          alert(error.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
+      }, 1000); // 1 second delay to simulate API call
     } else {
       setErrors(formErrors);
     }

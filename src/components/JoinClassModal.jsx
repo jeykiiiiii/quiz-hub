@@ -1,81 +1,97 @@
-// components/JoinClassModal.js
 import React, { useState } from 'react';
-import { availableClasses } from '../data/classes';
+import { getClassByCode } from '../utils/sharedClasses';
 
 function JoinClassModal({ show, onClose, onJoin }) {
   const [classCode, setClassCode] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const code = classCode.trim().toUpperCase();
-    
-    if (code && availableClasses[code]) {
-      onJoin(code);
-      setClassCode('');
-      onClose();
-    } else {
-      alert(`Class with code "${code}" not found.`);
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   if (!show) return null;
 
+  const handleJoin = async () => {
+    if (!classCode.trim()) {
+      setError('Please enter a class code');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    // Check if class exists
+    const classData = getClassByCode(classCode);
+    
+    if (!classData) {
+      setError('Class code not found. Please check the code and try again.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await onJoin(classCode.toUpperCase());
+      setClassCode('');
+      onClose();
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setClassCode('');
+    setError('');
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-900 rounded-xl w-full max-w-md p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md">
+        <h3 className="text-2xl font-bold mb-2">Join Class</h3>
+        <p className="text-gray-400 mb-6">
+          Enter the class code provided by your instructor
+        </p>
+
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Join Class</h2>
-          <p className="text-gray-400">You're currently signed as</p>
-          <div className="mt-2">
-            <p className="font-semibold">Juan Dela Cruz</p>
-            <p className="text-gray-400">JuanDelaCruz@email.com</p>
-          </div>
+          <label className="block text-gray-300 mb-2">Class Code</label>
+          <input
+            type="text"
+            value={classCode}
+            onChange={(e) => {
+              setClassCode(e.target.value.toUpperCase());
+              setError('');
+            }}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="e.g., DCIT26"
+            maxLength="10"
+          />
+          {error && (
+            <p className="text-red-400 text-sm mt-2">{error}</p>
+          )}
+          <p className="text-sm text-gray-500 mt-2">
+            The class code is usually 6 characters (letters and numbers)
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label className="block text-gray-300 mb-2 font-medium">Class code</label>
-            <p className="text-sm text-gray-400 mb-4">
-              Ask your instructor for the class code, then enter it here.
-            </p>
-            <input
-              type="text"
-              value={classCode}
-              onChange={(e) => setClassCode(e.target.value)}
-              placeholder="Enter class code (e.g., COSC101, DCIT26)"
-              className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-3 mb-2"
-              required
-            />
-            <div className="text-xs text-gray-400 space-y-1">
-              <p>To sign in with a class code</p>
-              <p>• Use an authorized account</p>
-              <p>• Use a class code with 5-8 letters or numbers, and no spaces or symbols</p>
-              <p className="mt-2 font-medium text-orange-400">Available class codes:</p>
-              {Object.entries(availableClasses).map(([code, classData]) => (
-                <p key={code}>• {code} ({classData.name})</p>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setClassCode('');
-                onClose();
-              }}
-              className="px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition font-medium"
-            >
-              Join
-            </button>
-          </div>
-        </form>
+        <div className="flex gap-3">
+          <button
+            onClick={handleClose}
+            className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleJoin}
+            disabled={isLoading || !classCode.trim()}
+            className={`flex-1 px-4 py-3 rounded-lg transition ${
+              isLoading || !classCode.trim()
+                ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                : 'bg-orange-600 hover:bg-orange-700'
+            }`}
+          >
+            {isLoading ? 'Joining...' : 'Join Class'}
+          </button>
+        </div>
       </div>
     </div>
   );
